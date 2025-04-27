@@ -1,0 +1,405 @@
+// Kiler — veri modeli
+//
+// Şema hem SQLite hem PostgreSQL ile çalışacak şekilde yazıldı:
+//  - enum yerine String + uygulama tarafında Zod doğrulaması (bkz. src/lib/constants.ts)
+//  - skaler liste (String[]) yerine JSON metni ("[]") — bkz. src/lib/json.ts
+// Sağlayıcı değiştirmek için: npm run db:use-postgres / npm run db:use-sqlite
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------- Kullanıcı
+
+model User {
+  id           String    @id @default(cuid())
+  name         String?
+  email        String    @unique
+  passwordHash String?
+  role         String    @default("USER") // USER | ADMIN
+  image        String?
+  lastActiveAt DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  preference      UserPreference?
+  favorites       Favorite[]
+  reviews         Review[]
+  cookedLogs      CookedLog[]
+  pantryItems     PantryItem[]
+  shoppingLists   ShoppingList[]
+  mealPlans       MealPlan[]
+  recipeViews     RecipeView[]
+  aiConversations AIConversation[]
+  aiQueryLogs     AIQueryLog[]
+}
+
+model UserPreference {
+  id                  String   @id @default(cuid())
+  userId              String   @unique
+  diets               String   @default("[]") // JSON: DietKey[]
+  allergens           String   @default("[]") // JSON: AllergenKey[]  — SERT filtre
+  dislikedIngredients String   @default("[]") // JSON: ingredient slug[] — SERT filtre
+  alwaysHave          String   @default("[\"tuz\",\"karabiber\",\"su\",\"sivi-yag\"]") // JSON: ingredient slug[]
+  calorieTarget       Int      @default(2000)
+  householdSize       Int      @default(2)
+  skillLevel          String   @default("BEGINNER") // BEGINNER | INTERMEDIATE | ADVANCED
+  updatedAt           DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// ---------------------------------------------------------------- Malzeme
+
+model Ingredient {
+  id          String  @id @default(cuid())
+  slug        String  @unique
+  name        String
+  synonyms    String  @default("[]") // JSON: string[]
+  aisle       String  @default("OTHER") // PRODUCE | BUTCHER | DAIRY | DRY | SPICE | FROZEN | OTHER
+  defaultUnit String  @default("g")
+  kind        String  @default("plant") // plant | dairy | egg | meat | fish | honey
+  isBasic     Boolean @default(false) // tuz, su, yağ… eşleşme oranına dahil edilmez
+  density     Float? // g/ml — hacim birimlerinden grama dönüşüm için
+  // 100 g başına besin değerleri
+  kcal        Float   @default(0)
+  protein     Float   @default(0)
+  carbs       Float   @default(0)
+  fat         Float   @default(0)
+  fiber       Float   @default(0)
+  sugar       Float   @default(0)
+  sodium      Float   @default(0) // mg
+  allergens   String  @default("[]") // JSON: AllergenKey[]
+  parentId    String? // üst-alt ilişkisi: kaşar → peynir
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  parent            Ingredient?            @relation("IngredientHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
+  children          Ingredient[]           @relation("IngredientHierarchy")
+  conversions       IngredientConversion[]
+  recipeIngredients RecipeIngredient[]
+  pantryItems       PantryItem[]
+  shoppingItems     ShoppingListItem[]
+}
+
+model IngredientConversion {
+  id           String @id @default(cuid())
+  ingredientId String
+  unit         String // ör. "su bardağı", "adet", "yemek kaşığı"
+  grams        Float // 1 birim = ? g
+
+  ingredient Ingredient @relation(fields: [ingredientId], references: [id], onDelete: Cascade)
+
+  @@unique([ingredientId, unit])
+}
+
+// ---------------------------------------------------------------- Tarif
+
+model Category {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  name        String
+  description String?
+  icon        String   @default("utensils")
+  sortOrder   Int      @default(0)
+  recipes     Recipe[]
+}
+
+model Cuisine {
+  id      String   @id @default(cuid())
+  slug    String   @unique
+  name    String
+  recipes Recipe[]
+}
+
+model Tag {
+  id      String   @id @default(cuid())
+  slug    String   @unique
+  name    String
+  recipes Recipe[]
+}
+
+model Recipe {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  title       String
+  description String
+  imageUrl    String?
+  coverColor  String   @default("#8A9A5B") // görsel yoksa tipografik kapak rengi
+  categoryId  String
+  cuisineId   String
+  difficulty  String   @default("EASY") // EASY | MEDIUM | HARD
+  prepMinutes Int      @default(0)
+  cookMinutes Int      @default(0)
+  totalMinutes Int     @default(0)
+  servings    Int      @default(4)
+  tips        String   @default("[]") // JSON: string[]
+
+  // Diyet bilgileri — malzemelerden otomatik çıkarılır, sorgulanabilir kolonlar
+  isVegetarian  Boolean @default(false)
+  isVegan       Boolean @default(false)
+  isGlutenFree  Boolean @default(false)
+  isLactoseFree Boolean @default(false)
+  isLowCarb     Boolean @default(false)
+  isHighProtein Boolean @default(false)
+  allergens     String  @default("[]") // JSON: AllergenKey[] — malzemelerden otomatik
+
+  // Porsiyon başına besin değerleri (malzemelerden hesaplanıp saklanır)
+  calories        Float?
+  protein         Float?
+  carbs           Float?
+  fat             Float?
+  fiber           Float?
+  sugar           Float?
+  sodium          Float?
+  nutritionManual Boolean @default(false)
+
+  // Denormalize sayaçlar
+  ratingAvg     Float @default(0)
+  ratingCount   Int   @default(0)
+  viewCount     Int   @default(0)
+  favoriteCount Int   @default(0)
+  cookedCount   Int   @default(0)
+
+  featured  Boolean  @default(false)
+  published Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  category    Category           @relation(fields: [categoryId], references: [id])
+  cuisine     Cuisine            @relation(fields: [cuisineId], references: [id])
+  tags        Tag[]
+  ingredients RecipeIngredient[]
+  steps       RecipeStep[]
+  reviews     Review[]
+  favorites   Favorite[]
+  cookedLogs  CookedLog[]
+  views       RecipeView[]
+  planEntries MealPlanEntry[]
+
+  @@index([categoryId])
+  @@index([cuisineId])
+}
+
+model RecipeIngredient {
+  id           String  @id @default(cuid())
+  recipeId     String
+  ingredientId String
+  quantity     Float?
+  unit         String  @default("g")
+  note         String?
+  optional     Boolean @default(false)
+  sortOrder    Int     @default(0)
+
+  recipe     Recipe     @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  ingredient Ingredient @relation(fields: [ingredientId], references: [id])
+
+  @@index([recipeId])
+  @@index([ingredientId])
+}
+
+model RecipeStep {
+  id              String @id @default(cuid())
+  recipeId        String
+  order           Int
+  text            String
+  durationMinutes Int?
+
+  recipe Recipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+
+  @@index([recipeId])
+}
+
+// ---------------------------------------------------------------- Etkileşim
+
+model Favorite {
+  id        String   @id @default(cuid())
+  userId    String
+  recipeId  String
+  createdAt DateTime @default(now())
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  recipe Recipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, recipeId])
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  userId    String
+  recipeId  String
+  rating    Int
+  comment   String
+  photoUrl  String?
+  status    String   @default("PUBLISHED") // PUBLISHED | HIDDEN
+  createdAt DateTime @default(now())
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  recipe Recipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, recipeId])
+  @@index([recipeId])
+}
+
+model CookedLog {
+  id        String   @id @default(cuid())
+  userId    String
+  recipeId  String
+  note      String?
+  photoUrl  String?
+  createdAt DateTime @default(now())
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  recipe Recipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model RecipeView {
+  id        String   @id @default(cuid())
+  recipeId  String
+  userId    String?
+  createdAt DateTime @default(now())
+
+  recipe Recipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  user   User?  @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt])
+  @@index([userId])
+}
+
+// ---------------------------------------------------------------- Dolap & Liste & Plan
+
+model PantryItem {
+  id           String   @id @default(cuid())
+  userId       String
+  ingredientId String
+  createdAt    DateTime @default(now())
+
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ingredient Ingredient @relation(fields: [ingredientId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, ingredientId])
+}
+
+model ShoppingList {
+  id        String   @id @default(cuid())
+  userId    String
+  name      String   @default("Alışveriş Listem")
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user  User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items ShoppingListItem[]
+
+  @@index([userId, isActive])
+}
+
+model ShoppingListItem {
+  id           String    @id @default(cuid())
+  listId       String
+  ingredientId String?
+  name         String
+  quantity     Float?
+  unit         String?
+  aisle        String    @default("OTHER")
+  checked      Boolean   @default(false)
+  sources      String    @default("[]") // JSON: { recipeId, title }[]
+  createdAt    DateTime  @default(now())
+  checkedAt    DateTime?
+
+  list       ShoppingList @relation(fields: [listId], references: [id], onDelete: Cascade)
+  ingredient Ingredient?  @relation(fields: [ingredientId], references: [id], onDelete: SetNull)
+
+  @@index([listId])
+}
+
+model MealPlan {
+  id        String   @id @default(cuid())
+  userId    String
+  weekStart DateTime // haftanın pazartesisi (UTC 00:00)
+  notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user    User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  entries MealPlanEntry[]
+
+  @@unique([userId, weekStart])
+}
+
+model MealPlanEntry {
+  id         String @id @default(cuid())
+  mealPlanId String
+  day        Int // 0 = Pazartesi … 6 = Pazar
+  meal       String // BREAKFAST | LUNCH | DINNER | SNACK
+  recipeId   String
+  servings   Int    @default(2)
+
+  mealPlan MealPlan @relation(fields: [mealPlanId], references: [id], onDelete: Cascade)
+  recipe   Recipe   @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+
+  @@index([mealPlanId])
+}
+
+// ---------------------------------------------------------------- AI
+
+model AIConversation {
+  id        String   @id @default(cuid())
+  userId    String
+  kind      String   @default("KITCHEN") // KITCHEN | ADMIN
+  title     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user     User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages AIMessage[]
+
+  @@index([userId, kind])
+}
+
+model AIMessage {
+  id             String   @id @default(cuid())
+  conversationId String
+  role           String // user | assistant
+  content        String
+  payload        String? // JSON: yapılandırılmış yanıt (tarifler, aksiyonlar)
+  createdAt      DateTime @default(now())
+
+  conversation AIConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId])
+}
+
+model AIQueryLog {
+  id          String   @id @default(cuid())
+  userId      String?
+  source      String   @default("CHAT") // CHAT | SEARCH | PANTRY | PLANNER | ADMIN
+  query       String
+  intent      String?
+  ingredients String   @default("[]") // JSON: slug[]
+  filters     String   @default("{}") // JSON
+  recipeIds   String   @default("[]") // JSON: önerilen tarif id'leri
+  resultCount Int      @default(0)
+  success     Boolean  @default(true)
+  mode        String   @default("demo") // openai | demo
+  createdAt   DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt])
+  @@index([source])
+}
+
+model Newsletter {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  createdAt DateTime @default(now())
+}
