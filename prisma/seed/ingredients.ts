@@ -1,0 +1,191 @@
+// Demo malzeme verisi. Besin değerleri 100 g başınadır (USDA / TürKomp yaklaşık değerleri).
+// Biçim: ing(slug, ad, reyon, tür, [kcal, protein, karb, yağ, lif, şeker, sodyum(mg)], seçenekler)
+
+export interface SeedIngredient {
+  slug: string;
+  name: string;
+  aisle: "PRODUCE" | "BUTCHER" | "DAIRY" | "DRY" | "SPICE" | "FROZEN" | "OTHER";
+  kind: "plant" | "dairy" | "egg" | "meat" | "fish" | "honey";
+  n: [number, number, number, number, number, number, number];
+  syn?: string[];
+  parent?: string;
+  allergens?: string[];
+  unit?: string;
+  conv?: Record<string, number>;
+  density?: number;
+  basic?: boolean;
+}
+
+type Opts = Omit<SeedIngredient, "slug" | "name" | "aisle" | "kind" | "n">;
+const ing = (
+  slug: string,
+  name: string,
+  aisle: SeedIngredient["aisle"],
+  kind: SeedIngredient["kind"],
+  n: SeedIngredient["n"],
+  opts: Opts = {},
+): SeedIngredient => ({ slug, name, aisle, kind, n, ...opts });
+
+export const INGREDIENTS: SeedIngredient[] = [
+  // ------------------------------------------------------------------ Manav
+  ing("domates", "Domates", "PRODUCE", "plant", [18, 0.9, 3.9, 0.2, 1.2, 2.6, 5], { unit: "adet", conv: { adet: 120, "su bardağı": 180 } }),
+  ing("cherry-domates", "Cherry domates", "PRODUCE", "plant", [18, 0.9, 3.9, 0.2, 1.2, 2.6, 5], { parent: "domates", syn: ["çeri domates", "kiraz domates"], unit: "adet", conv: { adet: 15, "su bardağı": 150 } }),
+  ing("konserve-domates", "Konserve doğranmış domates", "DRY", "plant", [32, 1.6, 7, 0.3, 1.9, 4, 132], { parent: "domates", syn: ["konserve domates", "doğranmış domates", "domates konservesi", "küp domates"], unit: "kutu", conv: { kutu: 400, "su bardağı": 200 } }),
+  ing("salatalik", "Salatalık", "PRODUCE", "plant", [15, 0.7, 3.6, 0.1, 0.5, 1.7, 2], { syn: ["hıyar"], unit: "adet", conv: { adet: 150 } }),
+  ing("sogan", "Soğan", "PRODUCE", "plant", [40, 1.1, 9.3, 0.1, 1.7, 4.2, 4], { syn: ["kuru soğan", "sarı soğan"], unit: "adet", conv: { adet: 110, "su bardağı": 160 } }),
+  ing("kirmizi-sogan", "Kırmızı soğan", "PRODUCE", "plant", [40, 1.1, 9.3, 0.1, 1.7, 4.2, 4], { parent: "sogan", syn: ["mor soğan"], unit: "adet", conv: { adet: 110 } }),
+  ing("yesil-sogan", "Yeşil soğan", "PRODUCE", "plant", [32, 1.8, 7.3, 0.2, 2.6, 2.3, 16], { syn: ["taze soğan"], unit: "dal", conv: { dal: 15, demet: 100 } }),
+  ing("sarimsak", "Sarımsak", "PRODUCE", "plant", [149, 6.4, 33, 0.5, 2.1, 1, 17], { unit: "diş", conv: { diş: 5, adet: 40 } }),
+  ing("patates", "Patates", "PRODUCE", "plant", [77, 2, 17, 0.1, 2.2, 0.8, 6], { unit: "adet", conv: { adet: 170 } }),
+  ing("tatli-patates", "Tatlı patates", "PRODUCE", "plant", [86, 1.6, 20, 0.1, 3, 4.2, 55], { syn: ["batat"], unit: "adet", conv: { adet: 200 } }),
+  ing("havuc", "Havuç", "PRODUCE", "plant", [41, 0.9, 9.6, 0.2, 2.8, 4.7, 69], { unit: "adet", conv: { adet: 70, "su bardağı": 110 } }),
+  ing("patlican", "Patlıcan", "PRODUCE", "plant", [25, 1, 6, 0.2, 3, 3.5, 2], { syn: ["kemer patlıcan", "bostan patlıcan"], unit: "adet", conv: { adet: 250 } }),
+  ing("kabak", "Kabak", "PRODUCE", "plant", [17, 1.2, 3.1, 0.3, 1, 2.5, 8], { syn: ["sakız kabağı", "dolmalık kabak"], unit: "adet", conv: { adet: 200 } }),
+  ing("biber", "Biber", "PRODUCE", "plant", [20, 0.9, 4.6, 0.2, 1.7, 2.4, 3], { unit: "adet", conv: { adet: 40 } }),
+  ing("yesil-biber", "Yeşil biber", "PRODUCE", "plant", [20, 0.9, 4.6, 0.2, 1.7, 2.4, 3], { parent: "biber", syn: ["sivri biber", "çarliston biber", "köy biberi"], unit: "adet", conv: { adet: 30 } }),
+  ing("kapya-biber", "Kapya biber", "PRODUCE", "plant", [31, 1, 6, 0.3, 2.1, 4.2, 4], { parent: "biber", syn: ["kapya", "kırmızı kapya biber", "kırmızı dolmalık biber"], unit: "adet", conv: { adet: 120 } }),
+  ing("dolmalik-biber", "Dolmalık biber", "PRODUCE", "plant", [20, 0.9, 4.6, 0.2, 1.7, 2.4, 3], { parent: "biber", syn: ["yeşil dolmalık biber"], unit: "adet", conv: { adet: 100 } }),
+  ing("aci-biber", "Acı biber", "PRODUCE", "plant", [40, 1.9, 9, 0.4, 1.5, 5, 7], { parent: "biber", syn: ["sivri acı biber", "jalapeno"], unit: "adet", conv: { adet: 15 } }),
+  ing("ispanak", "Ispanak", "PRODUCE", "plant", [23, 2.9, 3.6, 0.4, 2.2, 0.4, 79], { syn: ["taze ıspanak", "bebek ıspanak"], unit: "g", conv: { demet: 500, "su bardağı": 30, avuç: 25 } }),
+  ing("pirasa", "Pırasa", "PRODUCE", "plant", [61, 1.5, 14, 0.3, 1.8, 3.9, 20], { unit: "adet", conv: { adet: 250 } }),
+  ing("taze-fasulye", "Taze fasulye", "PRODUCE", "plant", [31, 1.8, 7, 0.2, 2.7, 3.3, 6], { syn: ["yeşil fasulye", "ayşe kadın fasulye", "çalı fasulyesi"], unit: "g" }),
+  ing("enginar", "Enginar", "PRODUCE", "plant", [47, 3.3, 10.5, 0.2, 5.4, 1, 94], { syn: ["enginar kalbi", "enginar çanağı"], unit: "adet", conv: { adet: 120 } }),
+  ing("brokoli", "Brokoli", "PRODUCE", "plant", [34, 2.8, 7, 0.4, 2.6, 1.7, 33], { unit: "adet", conv: { adet: 400, "su bardağı": 90 } }),
+  ing("karnabahar", "Karnabahar", "PRODUCE", "plant", [25, 1.9, 5, 0.3, 2, 1.9, 30], { unit: "adet", conv: { adet: 600 } }),
+  ing("mantar", "Mantar", "PRODUCE", "plant", [22, 3.1, 3.3, 0.3, 1, 2, 5], { syn: ["kültür mantarı", "istiridye mantarı", "şampiyon mantar"], unit: "g", conv: { "su bardağı": 70, paket: 250 } }),
+  ing("marul", "Marul", "PRODUCE", "plant", [15, 1.4, 2.9, 0.2, 1.3, 0.8, 28], { syn: ["göbek marul", "kıvırcık", "kıvırcık marul", "yeşillik"], unit: "adet", conv: { adet: 400, yaprak: 10, "su bardağı": 50 } }),
+  ing("roka", "Roka", "PRODUCE", "plant", [25, 2.6, 3.7, 0.7, 1.6, 2, 27], { unit: "demet", conv: { demet: 50, avuç: 20 } }),
+  ing("maydanoz", "Maydanoz", "PRODUCE", "plant", [36, 3, 6.3, 0.8, 3.3, 0.9, 56], { unit: "demet", conv: { demet: 50, "su bardağı": 30, "yemek kaşığı": 4, dal: 3 } }),
+  ing("dereotu", "Dereotu", "PRODUCE", "plant", [43, 3.5, 7, 1.1, 2.1, 0, 61], { unit: "demet", conv: { demet: 40, "yemek kaşığı": 3 } }),
+  ing("taze-nane", "Taze nane", "PRODUCE", "plant", [70, 3.8, 15, 0.9, 8, 0, 31], { unit: "demet", conv: { demet: 30, dal: 2, "yemek kaşığı": 3 } }),
+  ing("kisnis", "Taze kişniş", "PRODUCE", "plant", [23, 2.1, 3.7, 0.5, 2.8, 0.9, 46], { syn: ["kişniş", "kişniş yaprağı"], unit: "demet", conv: { demet: 30, "yemek kaşığı": 3 } }),
+  ing("feslegen", "Fesleğen", "PRODUCE", "plant", [23, 3.2, 2.7, 0.6, 1.6, 0.3, 4], { syn: ["taze fesleğen", "reyhan"], unit: "demet", conv: { demet: 25, yaprak: 0.5 } }),
+  ing("limon", "Limon", "PRODUCE", "plant", [29, 1.1, 9.3, 0.3, 2.8, 2.5, 2], { syn: ["misket limonu", "lime"], unit: "adet", conv: { adet: 100 } }),
+  ing("limon-suyu", "Limon suyu", "PRODUCE", "plant", [22, 0.4, 6.9, 0.2, 0.3, 2.5, 1], { parent: "limon", syn: ["taze sıkılmış limon suyu"], unit: "yemek kaşığı", density: 1 }),
+  ing("portakal", "Portakal", "PRODUCE", "plant", [47, 0.9, 12, 0.1, 2.4, 9, 0], { unit: "adet", conv: { adet: 180 } }),
+  ing("elma", "Elma", "PRODUCE", "plant", [52, 0.3, 14, 0.2, 2.4, 10, 1], { syn: ["yeşil elma", "kırmızı elma"], unit: "adet", conv: { adet: 180 } }),
+  ing("muz", "Muz", "PRODUCE", "plant", [89, 1.1, 23, 0.3, 2.6, 12, 1], { unit: "adet", conv: { adet: 120 } }),
+  ing("cilek", "Çilek", "PRODUCE", "plant", [32, 0.7, 7.7, 0.3, 2, 4.9, 1], { unit: "su bardağı", conv: { "su bardağı": 150, adet: 12 } }),
+  ing("yaban-mersini", "Yaban mersini", "PRODUCE", "plant", [57, 0.7, 14, 0.3, 2.4, 10, 1], { syn: ["blueberry", "orman meyvesi"], unit: "su bardağı", conv: { "su bardağı": 140, avuç: 40 } }),
+  ing("avokado", "Avokado", "PRODUCE", "plant", [160, 2, 8.5, 14.7, 6.7, 0.7, 7], { unit: "adet", conv: { adet: 170 } }),
+  ing("zencefil", "Taze zencefil", "PRODUCE", "plant", [80, 1.8, 18, 0.8, 2, 1.7, 13], { syn: ["zencefil", "zencefil kökü"], unit: "g", conv: { "tatlı kaşığı": 5, "yemek kaşığı": 8 } }),
+  ing("balkabagi", "Balkabağı", "PRODUCE", "plant", [26, 1, 6.5, 0.1, 0.5, 2.8, 1], { syn: ["bal kabağı", "kabak tatlısı kabağı"], unit: "g" }),
+  ing("misir", "Mısır", "PRODUCE", "plant", [86, 3.2, 19, 1.2, 2.7, 3.2, 15], { syn: ["haşlanmış mısır", "konserve mısır", "mısır tanesi"], unit: "su bardağı", conv: { "su bardağı": 160, kutu: 220 } }),
+  ing("asma-yapragi", "Asma yaprağı", "PRODUCE", "plant", [93, 5.6, 17, 2.1, 11, 6.3, 900], { syn: ["yaprak", "salamura yaprak", "sarmalık yaprak", "üzüm yaprağı"], unit: "g" }),
+  ing("nar", "Nar", "PRODUCE", "plant", [83, 1.7, 19, 1.2, 4, 14, 3], { syn: ["nar tanesi"], unit: "adet", conv: { adet: 250, "su bardağı": 170 } }),
+  ing("lahana", "Lahana", "PRODUCE", "plant", [25, 1.3, 5.8, 0.1, 2.5, 3.2, 18], { syn: ["beyaz lahana", "kırmızı lahana", "mor lahana"], unit: "g", conv: { "su bardağı": 90 } }),
+  ing("pancar", "Kırmızı pancar", "PRODUCE", "plant", [43, 1.6, 10, 0.2, 2.8, 7, 78], { syn: ["pancar"], unit: "adet", conv: { adet: 150 } }),
+  ing("kereviz", "Kereviz", "PRODUCE", "plant", [42, 1.5, 9.2, 0.3, 1.8, 1.6, 100], { syn: ["kereviz kökü", "kereviz sapı"], unit: "adet", conv: { adet: 400 } }),
+  ing("bamya", "Bamya", "PRODUCE", "plant", [33, 1.9, 7.5, 0.2, 3.2, 1.5, 7], { unit: "g" }),
+
+  // ------------------------------------------------------------------ Kasap & balık
+  ing("et", "Et", "BUTCHER", "meat", [250, 26, 0, 15, 0, 0, 60], { syn: ["kırmızı et", "dana eti", "kuzu eti", "dana"], unit: "g" }),
+  ing("kiyma", "Kıyma", "BUTCHER", "meat", [250, 17, 0, 20, 0, 0, 66], { parent: "et", syn: ["çekilmiş et", "dana kıyma", "kuzu kıyma", "orta yağlı kıyma", "yağsız kıyma"], unit: "g" }),
+  ing("kusbasi", "Kuşbaşı et", "BUTCHER", "meat", [150, 21, 0, 7, 0, 0, 60], { parent: "et", syn: ["kuşbaşı", "dana kuşbaşı", "kuzu kuşbaşı", "gulaşlık et"], unit: "g" }),
+  ing("tavuk", "Tavuk", "BUTCHER", "meat", [165, 31, 0, 3.6, 0, 0, 74], { syn: ["piliç", "tavuk eti", "bütün tavuk"], unit: "g" }),
+  ing("tavuk-gogsu", "Tavuk göğsü", "BUTCHER", "meat", [120, 22.5, 0, 2.6, 0, 0, 45], { parent: "tavuk", syn: ["tavuk fileto", "göğüs fileto", "piliç göğsü"], unit: "g", conv: { adet: 200 } }),
+  ing("tavuk-but", "Tavuk but", "BUTCHER", "meat", [177, 24, 0, 8.5, 0, 0, 85], { parent: "tavuk", syn: ["tavuk baget", "but", "kemiksiz but", "tavuk pirzola"], unit: "adet", conv: { adet: 130 } }),
+  ing("sucuk", "Sucuk", "BUTCHER", "meat", [452, 22, 2, 39, 0, 0, 1200], { syn: ["kangal sucuk", "dana sucuk"], unit: "g", conv: { dilim: 8 } }),
+  ing("balik", "Balık", "BUTCHER", "fish", [150, 20, 0, 7, 0, 0, 70], { allergens: ["seafood"], syn: ["beyaz balık"], unit: "g" }),
+  ing("somon", "Somon", "BUTCHER", "fish", [208, 20, 0, 13, 0, 0, 59], { parent: "balik", allergens: ["seafood"], syn: ["somon fileto", "norveç somonu"], unit: "g", conv: { adet: 150 } }),
+  ing("levrek", "Levrek", "BUTCHER", "fish", [97, 18, 0, 2, 0, 0, 68], { parent: "balik", allergens: ["seafood"], syn: ["levrek fileto"], unit: "g", conv: { adet: 300 } }),
+  ing("ton-baligi", "Ton balığı", "DRY", "fish", [116, 26, 0, 1, 0, 0, 300], { parent: "balik", allergens: ["seafood"], syn: ["konserve ton balığı", "ton"], unit: "kutu", conv: { kutu: 160 } }),
+  ing("karides", "Karides", "FROZEN", "fish", [99, 24, 0.2, 0.3, 0, 0, 111], { allergens: ["seafood"], syn: ["jumbo karides", "ayıklanmış karides"], unit: "g" }),
+
+  // ------------------------------------------------------------------ Süt ürünleri & yumurta
+  ing("sut", "Süt", "DAIRY", "dairy", [61, 3.2, 4.8, 3.3, 0, 5, 43], { allergens: ["milk"], syn: ["inek sütü", "tam yağlı süt", "yarım yağlı süt"], unit: "su bardağı", density: 1.03 }),
+  ing("yogurt", "Yoğurt", "DAIRY", "dairy", [61, 3.5, 4.7, 3.3, 0, 4.7, 46], { allergens: ["milk"], syn: ["süzme yoğurt", "tam yağlı yoğurt", "ev yoğurdu"], unit: "su bardağı", conv: { "su bardağı": 200, "yemek kaşığı": 20 } }),
+  ing("peynir", "Peynir", "DAIRY", "dairy", [300, 20, 2, 24, 0, 1, 600], { allergens: ["milk"], unit: "g" }),
+  ing("beyaz-peynir", "Beyaz peynir", "DAIRY", "dairy", [264, 14, 4, 21, 0, 4, 1100], { parent: "peynir", allergens: ["milk"], syn: ["tam yağlı beyaz peynir", "feta", "ezine peyniri", "inek peyniri"], unit: "g", conv: { "su bardağı": 120, dilim: 30 } }),
+  ing("kasar", "Kaşar peyniri", "DAIRY", "dairy", [380, 26, 2, 30, 0, 0.5, 700], { parent: "peynir", allergens: ["milk"], syn: ["kaşar", "rendelenmiş kaşar", "taze kaşar"], unit: "g", conv: { "su bardağı": 100, dilim: 20 } }),
+  ing("lor", "Lor peyniri", "DAIRY", "dairy", [98, 11, 3.4, 4.3, 0, 2.7, 364], { parent: "peynir", allergens: ["milk"], syn: ["lor"], unit: "g", conv: { "su bardağı": 200 } }),
+  ing("parmesan", "Parmesan", "DAIRY", "dairy", [431, 38, 4, 29, 0, 0.9, 1529], { parent: "peynir", allergens: ["milk"], syn: ["parmesan peyniri", "parmigiano", "rendelenmiş parmesan"], unit: "g", conv: { "yemek kaşığı": 5 } }),
+  ing("mozzarella", "Mozzarella", "DAIRY", "dairy", [280, 28, 3.1, 17, 0, 1, 627], { parent: "peynir", allergens: ["milk"], syn: ["mozarella"], unit: "g" }),
+  ing("krem-peynir", "Krem peynir", "DAIRY", "dairy", [342, 6, 4, 34, 0, 3, 321], { parent: "peynir", allergens: ["milk"], syn: ["labne", "labne peyniri"], unit: "g", conv: { "yemek kaşığı": 15 } }),
+  ing("tereyagi", "Tereyağı", "DAIRY", "dairy", [717, 0.9, 0.1, 81, 0, 0.1, 11], { allergens: ["milk"], syn: ["tereyağ", "tuzsuz tereyağı"], unit: "yemek kaşığı", conv: { "yemek kaşığı": 14, "tatlı kaşığı": 9, "çay kaşığı": 5, paket: 250 } }),
+  ing("krema", "Krema", "DAIRY", "dairy", [292, 2.1, 3, 30, 0, 3, 30], { allergens: ["milk"], syn: ["sıvı krema", "şef kreması", "yemeklik krema", "pişirme kreması"], unit: "ml", density: 1, conv: { paket: 200 } }),
+  ing("yumurta", "Yumurta", "DAIRY", "egg", [143, 12.6, 0.7, 9.5, 0, 0.4, 142], { allergens: ["egg"], syn: ["köy yumurtası", "yumurta sarısı", "yumurta akı"], unit: "adet", conv: { adet: 50 } }),
+  ing("badem-sutu", "Badem sütü", "DAIRY", "plant", [17, 0.6, 0.6, 1.4, 0.2, 0, 72], { allergens: ["nuts"], syn: ["bitkisel süt"], unit: "su bardağı", density: 1 }),
+  ing("yulaf-sutu", "Yulaf sütü", "DAIRY", "plant", [46, 1, 6.7, 1.5, 0.8, 4, 40], { allergens: ["gluten"], unit: "su bardağı", density: 1 }),
+  ing("tofu", "Tofu", "DAIRY", "plant", [76, 8, 1.9, 4.8, 0.3, 0.6, 7], { allergens: ["soy"], syn: ["soya peyniri"], unit: "g" }),
+
+  // ------------------------------------------------------------------ Kuru gıda
+  ing("mercimek", "Mercimek", "DRY", "plant", [352, 25, 60, 1, 11, 2, 6], { unit: "su bardağı", conv: { "su bardağı": 190 } }),
+  ing("kirmizi-mercimek", "Kırmızı mercimek", "DRY", "plant", [358, 24, 60, 1.5, 11, 2, 6], { parent: "mercimek", syn: ["süzme mercimek", "kırmızı mercimekler"], unit: "su bardağı", conv: { "su bardağı": 190 } }),
+  ing("yesil-mercimek", "Yeşil mercimek", "DRY", "plant", [352, 25, 63, 1, 11, 2, 6], { parent: "mercimek", syn: ["iri mercimek"], unit: "su bardağı", conv: { "su bardağı": 190 } }),
+  ing("nohut", "Nohut", "DRY", "plant", [364, 19, 61, 6, 17, 11, 24], { syn: ["kuru nohut"], unit: "su bardağı", conv: { "su bardağı": 180 } }),
+  ing("haslanmis-nohut", "Haşlanmış nohut", "DRY", "plant", [164, 9, 27, 2.6, 7.6, 4.8, 7], { parent: "nohut", syn: ["konserve nohut", "nohut konservesi"], unit: "su bardağı", conv: { "su bardağı": 160, kutu: 240 } }),
+  ing("kuru-fasulye", "Kuru fasulye", "DRY", "plant", [333, 23, 60, 0.8, 15, 2, 16], { syn: ["beyaz fasulye", "dermason fasulye"], unit: "su bardağı", conv: { "su bardağı": 180 } }),
+  ing("barbunya", "Barbunya", "DRY", "plant", [127, 8.7, 22.8, 0.5, 7.4, 0.3, 5], { syn: ["haşlanmış barbunya", "barbunya fasulyesi"], unit: "su bardağı", conv: { "su bardağı": 170 } }),
+  ing("kirmizi-fasulye", "Kırmızı fasulye", "DRY", "plant", [127, 8.7, 22.8, 0.5, 7.4, 0.3, 230], { syn: ["konserve kırmızı fasulye", "böbrek fasulyesi"], unit: "kutu", conv: { kutu: 240, "su bardağı": 170 } }),
+  ing("pirinc", "Pirinç", "DRY", "plant", [360, 6.6, 79, 0.6, 1, 0.1, 5], { syn: ["baldo pirinç", "osmancık pirinç", "basmati pirinç", "jasmine pirinç"], unit: "su bardağı", conv: { "su bardağı": 180, "yemek kaşığı": 12 } }),
+  ing("arborio-pirinc", "Arborio pirinç", "DRY", "plant", [360, 6.6, 79, 0.6, 1, 0.1, 5], { parent: "pirinc", syn: ["risotto pirinci", "arborio"], unit: "su bardağı", conv: { "su bardağı": 180 } }),
+  ing("pirinc-unu", "Pirinç unu", "DRY", "plant", [366, 6, 80, 1.4, 2.4, 0.1, 0], { unit: "yemek kaşığı", conv: { "yemek kaşığı": 9, "su bardağı": 140 } }),
+  ing("bulgur", "Bulgur", "DRY", "plant", [342, 12, 76, 1.3, 18, 0.4, 17], { allergens: ["gluten"], syn: ["pilavlık bulgur", "iri bulgur"], unit: "su bardağı", conv: { "su bardağı": 170 } }),
+  ing("ince-bulgur", "İnce bulgur", "DRY", "plant", [342, 12, 76, 1.3, 18, 0.4, 17], { parent: "bulgur", allergens: ["gluten"], syn: ["köftelik bulgur", "kısırlık bulgur"], unit: "su bardağı", conv: { "su bardağı": 170 } }),
+  ing("makarna", "Makarna", "DRY", "plant", [371, 13, 75, 1.5, 3.2, 2.7, 6], { allergens: ["gluten"], syn: ["burgu makarna", "kelebek makarna", "fiyonk makarna", "kalem makarna"], unit: "g", conv: { paket: 500, "su bardağı": 100 } }),
+  ing("spagetti", "Spagetti", "DRY", "plant", [371, 13, 75, 1.5, 3.2, 2.7, 6], { parent: "makarna", allergens: ["gluten"], syn: ["spaghetti", "linguine"], unit: "g", conv: { paket: 500 } }),
+  ing("penne", "Penne", "DRY", "plant", [371, 13, 75, 1.5, 3.2, 2.7, 6], { parent: "makarna", allergens: ["gluten"], syn: ["penne makarna"], unit: "g", conv: { paket: 500 } }),
+  ing("sehriye", "Şehriye", "DRY", "plant", [371, 13, 75, 1.5, 3, 2.7, 6], { parent: "makarna", allergens: ["gluten"], syn: ["tel şehriye", "arpa şehriye"], unit: "su bardağı", conv: { "su bardağı": 140, "yemek kaşığı": 10 } }),
+  ing("pirinc-eriste", "Pirinç eriştesi", "DRY", "plant", [364, 6, 80, 0.6, 1.6, 0, 182], { syn: ["pirinç noodle", "noodle", "pad thai eriştesi"], unit: "g", conv: { paket: 250 } }),
+  ing("un", "Un", "DRY", "plant", [364, 10, 76, 1, 2.7, 0.3, 2], { allergens: ["gluten"], syn: ["buğday unu", "beyaz un", "çok amaçlı un"], unit: "su bardağı", conv: { "su bardağı": 120, "yemek kaşığı": 10, "tatlı kaşığı": 6 } }),
+  ing("irmik", "İrmik", "DRY", "plant", [360, 12.7, 73, 1, 3.9, 0, 1], { allergens: ["gluten"], unit: "su bardağı", conv: { "su bardağı": 170, "yemek kaşığı": 12 } }),
+  ing("yulaf", "Yulaf ezmesi", "DRY", "plant", [389, 17, 66, 7, 10.6, 1, 2], { allergens: ["gluten"], syn: ["yulaf", "yulaf gevreği"], unit: "su bardağı", conv: { "su bardağı": 90, "yemek kaşığı": 8 } }),
+  ing("kinoa", "Kinoa", "DRY", "plant", [368, 14, 64, 6, 7, 0, 5], { syn: ["quinoa"], unit: "su bardağı", conv: { "su bardağı": 170 } }),
+  ing("nisasta", "Mısır nişastası", "DRY", "plant", [381, 0.3, 91, 0.1, 0.9, 0, 9], { syn: ["nişasta"], unit: "yemek kaşığı", conv: { "yemek kaşığı": 8 } }),
+  ing("galeta-unu", "Galeta unu", "DRY", "plant", [395, 13, 72, 5, 4.5, 6, 732], { allergens: ["gluten"], unit: "yemek kaşığı", conv: { "yemek kaşığı": 8, "su bardağı": 110 } }),
+  ing("seker", "Toz şeker", "DRY", "plant", [387, 0, 100, 0, 0, 100, 1], { syn: ["şeker", "beyaz şeker"], unit: "su bardağı", conv: { "su bardağı": 200, "yemek kaşığı": 12, "tatlı kaşığı": 8, "çay kaşığı": 4 } }),
+  ing("bal", "Bal", "DRY", "honey", [304, 0.3, 82, 0, 0.2, 82, 4], { syn: ["süzme bal", "çiçek balı"], unit: "yemek kaşığı", conv: { "yemek kaşığı": 21, "tatlı kaşığı": 14, "çay kaşığı": 7 } }),
+  ing("kakao", "Kakao", "DRY", "plant", [228, 20, 58, 14, 37, 1.8, 21], { syn: ["kakao tozu"], unit: "yemek kaşığı", conv: { "yemek kaşığı": 6 } }),
+  ing("bitter-cikolata", "Bitter çikolata", "DRY", "dairy", [546, 4.9, 61, 31, 7, 48, 24], { allergens: ["milk", "soy"], syn: ["bitter", "kuvertür çikolata", "çikolata"], unit: "g" }),
+  ing("kabartma-tozu", "Kabartma tozu", "DRY", "plant", [53, 0, 28, 0, 0.2, 0, 10600], { unit: "paket", conv: { paket: 10, "çay kaşığı": 4, "tatlı kaşığı": 6 } }),
+  ing("vanilin", "Vanilin", "DRY", "plant", [288, 0, 13, 0, 0, 13, 9], { syn: ["vanilya"], unit: "paket", conv: { paket: 5 } }),
+  ing("maya", "Kuru maya", "DRY", "plant", [325, 40, 41, 7.6, 27, 0, 51], { syn: ["instant maya", "maya", "yaş maya"], unit: "paket", conv: { paket: 10, "tatlı kaşığı": 4 } }),
+  ing("ceviz", "Ceviz", "DRY", "plant", [654, 15, 14, 65, 6.7, 2.6, 2], { allergens: ["nuts"], syn: ["ceviz içi"], unit: "su bardağı", conv: { "su bardağı": 100, "yemek kaşığı": 8, avuç: 30 } }),
+  ing("badem", "Badem", "DRY", "plant", [579, 21, 22, 50, 12.5, 4.4, 1], { allergens: ["nuts"], syn: ["çiğ badem", "badem içi"], unit: "su bardağı", conv: { "su bardağı": 140, avuç: 30 } }),
+  ing("yer-fistigi", "Yer fıstığı", "DRY", "plant", [567, 26, 16, 49, 8.5, 4, 18], { allergens: ["peanut"], syn: ["fıstık", "kavrulmuş fıstık"], unit: "su bardağı", conv: { "su bardağı": 145, "yemek kaşığı": 9 } }),
+  ing("susam", "Susam", "DRY", "plant", [573, 18, 23, 50, 12, 0.3, 11], { allergens: ["sesame"], unit: "yemek kaşığı", conv: { "yemek kaşığı": 9 } }),
+  ing("tahin", "Tahin", "DRY", "plant", [595, 17, 21, 54, 9, 0.5, 115], { allergens: ["sesame"], unit: "yemek kaşığı", conv: { "yemek kaşığı": 15 } }),
+  ing("chia", "Chia tohumu", "DRY", "plant", [486, 17, 42, 31, 34, 0, 16], { syn: ["chia"], unit: "yemek kaşığı", conv: { "yemek kaşığı": 12 } }),
+  ing("kuru-uzum", "Kuru üzüm", "DRY", "plant", [299, 3, 79, 0.5, 3.7, 59, 11], { syn: ["kuş üzümü", "çekirdeksiz kuru üzüm"], unit: "yemek kaşığı", conv: { "yemek kaşığı": 10, "su bardağı": 145 } }),
+  ing("domates-salcasi", "Domates salçası", "DRY", "plant", [82, 4.3, 19, 0.5, 4.1, 12, 1000], { syn: ["salça", "domates salça"], unit: "yemek kaşığı", conv: { "yemek kaşığı": 17, "tatlı kaşığı": 10 } }),
+  ing("biber-salcasi", "Biber salçası", "DRY", "plant", [75, 3, 14, 1, 4, 8, 2000], { syn: ["acı biber salçası", "tatlı biber salçası"], unit: "yemek kaşığı", conv: { "yemek kaşığı": 17, "tatlı kaşığı": 10 } }),
+  ing("sivi-yag", "Sıvı yağ", "DRY", "plant", [884, 0, 0, 100, 0, 0, 0], { basic: true, syn: ["ayçiçek yağı", "bitkisel yağ", "yağ", "kızartma yağı", "mısırözü yağı"], unit: "yemek kaşığı", density: 0.92 }),
+  ing("zeytinyagi", "Zeytinyağı", "DRY", "plant", [884, 0, 0, 100, 0, 0, 2], { parent: "sivi-yag", syn: ["sızma zeytinyağı", "naturel sızma zeytinyağı", "zeytin yağı"], unit: "yemek kaşığı", density: 0.91 }),
+  ing("hindistan-cevizi-sutu", "Hindistan cevizi sütü", "DRY", "plant", [230, 2.3, 6, 24, 0, 3.3, 15], { syn: ["coconut milk"], unit: "kutu", density: 1, conv: { kutu: 400 } }),
+  ing("sirke", "Sirke", "DRY", "plant", [18, 0, 0.04, 0, 0, 0.04, 2], { syn: ["üzüm sirkesi", "elma sirkesi"], unit: "yemek kaşığı", density: 1 }),
+  ing("soya-sosu", "Soya sosu", "DRY", "plant", [53, 8, 4.9, 0.6, 0.8, 0.4, 5493], { allergens: ["soy", "gluten"], unit: "yemek kaşığı", conv: { "yemek kaşığı": 16 } }),
+  ing("nar-eksisi", "Nar ekşisi", "DRY", "plant", [250, 0.5, 63, 0, 0.5, 50, 30], { syn: ["nar ekşisi sosu"], unit: "yemek kaşığı", conv: { "yemek kaşığı": 20 } }),
+  ing("zeytin", "Zeytin", "DRY", "plant", [115, 0.8, 6, 11, 3.2, 0, 735], { syn: ["siyah zeytin", "yeşil zeytin", "çekirdeksiz zeytin"], unit: "adet", conv: { adet: 4, "su bardağı": 130 } }),
+  ing("mayonez", "Mayonez", "DRY", "egg", [680, 1, 0.6, 75, 0, 0.6, 635], { allergens: ["egg"], unit: "yemek kaşığı", conv: { "yemek kaşığı": 14 } }),
+  ing("hardal", "Hardal", "DRY", "plant", [66, 4, 6, 4, 3, 1, 1135], { syn: ["dijon hardal"], unit: "tatlı kaşığı", conv: { "tatlı kaşığı": 6, "yemek kaşığı": 15 } }),
+  ing("tavuk-suyu", "Tavuk suyu", "OTHER", "meat", [15, 2, 1, 0.5, 0, 0, 340], { syn: ["tavuk bulyon", "tavuk et suyu"], unit: "su bardağı", density: 1 }),
+  ing("sebze-suyu", "Sebze suyu", "OTHER", "plant", [6, 0.2, 1.3, 0, 0, 0.6, 300], { syn: ["sebze bulyon", "sebze bulyonu"], unit: "su bardağı", density: 1 }),
+
+  // ------------------------------------------------------------------ Fırın / diğer
+  ing("ekmek", "Ekmek", "OTHER", "plant", [265, 9, 49, 3.2, 2.7, 5, 491], { allergens: ["gluten"], syn: ["tost ekmeği", "tam buğday ekmeği", "bayat ekmek", "ekşi mayalı ekmek", "köy ekmeği"], unit: "dilim", conv: { dilim: 30, adet: 300 } }),
+  ing("lavas", "Lavaş", "OTHER", "plant", [310, 8, 52, 7.5, 3, 2, 600], { allergens: ["gluten"], syn: ["tortilla", "dürüm lavaşı", "tam buğday lavaş"], unit: "adet", conv: { adet: 60 } }),
+  ing("yufka", "Yufka", "OTHER", "plant", [300, 9, 60, 2, 2, 1, 500], { allergens: ["gluten"], syn: ["börek yufkası", "yaş yufka"], unit: "adet", conv: { adet: 120 } }),
+  ing("su", "Su", "OTHER", "plant", [0, 0, 0, 0, 0, 0, 2], { basic: true, syn: ["ılık su", "sıcak su", "soğuk su", "kaynar su", "içme suyu"], unit: "su bardağı", density: 1 }),
+  ing("maden-suyu", "Maden suyu", "OTHER", "plant", [0, 0, 0, 0, 0, 0, 20], { syn: ["soda"], unit: "su bardağı", density: 1 }),
+
+  // ------------------------------------------------------------------ Donuk
+  ing("bezelye", "Bezelye", "FROZEN", "plant", [81, 5.4, 14, 0.4, 5, 5.7, 5], { syn: ["dondurulmuş bezelye", "taze bezelye"], unit: "su bardağı", conv: { "su bardağı": 140 } }),
+  ing("milfoy", "Milföy hamuru", "FROZEN", "plant", [551, 7, 46, 38, 1.5, 1, 250], { allergens: ["gluten"], syn: ["milföy"], unit: "adet", conv: { adet: 40 } }),
+  ing("dondurulmus-meyve", "Dondurulmuş meyve", "FROZEN", "plant", [50, 0.7, 12, 0.3, 2.4, 8, 1], { syn: ["donuk meyve", "frozen meyve"], unit: "su bardağı", conv: { "su bardağı": 140 } }),
+
+  // ------------------------------------------------------------------ Baharat
+  ing("tuz", "Tuz", "SPICE", "plant", [0, 0, 0, 0, 0, 0, 38758], { basic: true, syn: ["kaya tuzu", "deniz tuzu", "iyotlu tuz"], unit: "çay kaşığı", conv: { "çay kaşığı": 6, "tatlı kaşığı": 10, "yemek kaşığı": 18, tutam: 0.5 } }),
+  ing("karabiber", "Karabiber", "SPICE", "plant", [251, 10, 64, 3.3, 25, 0.6, 20], { basic: true, syn: ["toz karabiber", "çekilmiş karabiber"], unit: "çay kaşığı", conv: { "çay kaşığı": 2.3, tutam: 0.3, "tatlı kaşığı": 4 } }),
+  ing("pul-biber", "Pul biber", "SPICE", "plant", [282, 13, 50, 14, 35, 10, 30], { syn: ["kırmızı pul biber", "toz biber", "kırmızı toz biber", "isot", "paprika", "acı pul biber"], unit: "çay kaşığı", conv: { "çay kaşığı": 2, "tatlı kaşığı": 4, "yemek kaşığı": 7, tutam: 0.3 } }),
+  ing("kimyon", "Kimyon", "SPICE", "plant", [375, 18, 44, 22, 10.5, 2.3, 168], { unit: "çay kaşığı", conv: { "çay kaşığı": 2, "tatlı kaşığı": 4, tutam: 0.3 } }),
+  ing("kuru-nane", "Kuru nane", "SPICE", "plant", [285, 20, 52, 6, 30, 0, 344], { syn: ["nane"], unit: "tatlı kaşığı", conv: { "çay kaşığı": 1, "tatlı kaşığı": 2, "yemek kaşığı": 3 } }),
+  ing("kekik", "Kekik", "SPICE", "plant", [276, 9, 64, 7.4, 37, 1.7, 55], { syn: ["kuru kekik"], unit: "çay kaşığı", conv: { "çay kaşığı": 1, "tatlı kaşığı": 2 } }),
+  ing("zerdecal", "Zerdeçal", "SPICE", "plant", [312, 9.7, 67, 3.3, 22.7, 3.2, 27], { syn: ["toz zerdeçal", "zerdeçal tozu"], unit: "çay kaşığı", conv: { "çay kaşığı": 3 } }),
+  ing("kori", "Köri", "SPICE", "plant", [325, 14, 58, 14, 53, 2.8, 52], { syn: ["köri baharatı", "curry", "köri tozu"], unit: "tatlı kaşığı", conv: { "tatlı kaşığı": 4, "yemek kaşığı": 7 } }),
+  ing("tarcin", "Tarçın", "SPICE", "plant", [247, 4, 81, 1.2, 53, 2.2, 10], { syn: ["toz tarçın"], unit: "çay kaşığı", conv: { "çay kaşığı": 2.6, tutam: 0.3 } }),
+  ing("sumak", "Sumak", "SPICE", "plant", [239, 4, 71, 10, 35, 0, 25], { unit: "çay kaşığı", conv: { "çay kaşığı": 2, "tatlı kaşığı": 4 } }),
+  ing("yenibahar", "Yenibahar", "SPICE", "plant", [263, 6, 72, 8.7, 21.6, 0, 77], { unit: "çay kaşığı", conv: { "çay kaşığı": 2 } }),
+  ing("defne", "Defne yaprağı", "SPICE", "plant", [313, 7.6, 75, 8.4, 26, 0, 23], { syn: ["defne"], unit: "adet", conv: { adet: 0.2 } }),
+  ing("cemen", "Toz kişniş", "SPICE", "plant", [298, 12, 55, 18, 42, 0, 35], { syn: ["kişniş tohumu", "toz kişniş"], unit: "çay kaşığı", conv: { "çay kaşığı": 2 } }),
+];
