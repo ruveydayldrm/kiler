@@ -1,0 +1,115 @@
+@import "tailwindcss";
+
+/* =============================================================================
+   Kiler tasarım dili
+   Krem zemin · zeytin & adaçayı yeşilleri · domates ve safran vurgular
+   Renkler yemek fotoğraflarını öne çıkarır, onlarla yarışmaz.
+   ============================================================================= */
+
+@theme {
+  --color-cream: #fbf7f0;
+  --color-cream-200: #f4ecdf;
+  --color-cream-300: #ece0cc;
+  --color-paper: #fffdf9;
+
+  --color-olive: #3f5b3a;
+  --color-olive-50: #eef2ea;
+  --color-olive-100: #dde6d6;
+  --color-olive-600: #34502f;
+  --color-olive-700: #2b4227;
+
+  --color-sage: #8a9a5b;
+  --color-sage-100: #e9edda;
+
+  --color-tomato: #d9532b;
+  --color-tomato-50: #fcece6;
+  --color-tomato-600: #bf4420;
+
+  --color-saffron: #e9a23b;
+  --color-saffron-50: #fdf3e2;
+
+  --color-ink: #2a2620;
+  --color-ink-soft: #4a443b;
+  --color-muted: #8a8275;
+  --color-line: #e8dfd0;
+
+  --font-serif: var(--font-fraunces), ui-serif, Georgia, serif;
+  --font-sans: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
+
+  --radius-card: 18px;
+  --shadow-soft: 0 1px 2px rgb(42 38 32 / 0.04), 0 4px 16px -4px rgb(42 38 32 / 0.08);
+  --shadow-lift: 0 2px 4px rgb(42 38 32 / 0.05), 0 12px 32px -8px rgb(42 38 32 / 0.16);
+
+  --animate-float: float 7s ease-in-out infinite;
+  --animate-float-slow: float 9s ease-in-out infinite;
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+  }
+}
+
+@layer base {
+  html {
+    -webkit-tap-highlight-color: transparent;
+    scroll-behavior: smooth;
+  }
+  body {
+    background: var(--color-cream);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  h1, h2, h3, h4 {
+    font-family: var(--font-serif);
+    letter-spacing: -0.01em;
+    font-optical-sizing: auto;
+  }
+  ::selection {
+    background: var(--color-saffron-50);
+    color: var(--color-ink);
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-olive);
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+  button, [role="button"] { cursor: pointer; }
+  button:disabled { cursor: not-allowed; }
+}
+
+@layer utilities {
+  .container-page {
+    width: 100%;
+    max-width: 1240px;
+    margin-inline: auto;
+    padding-inline: 1rem;
+  }
+  @media (min-width: 640px) {
+    .container-page { padding-inline: 1.5rem; }
+  }
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { scrollbar-width: none; }
+  .text-balance { text-wrap: balance; }
+  .bg-grain {
+    background-image: radial-gradient(rgb(42 38 32 / 0.035) 1px, transparent 1px);
+    background-size: 14px 14px;
+  }
+  .safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@media print {
+  header, footer, nav, .no-print { display: none !important; }
+  body { background: white; }
+  .print-break { break-inside: avoid; }
+}
