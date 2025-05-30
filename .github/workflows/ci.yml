@@ -1,0 +1,30 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: "file:./dev.db"
+      AUTH_SECRET: "ci-only-secret-not-for-production"
+      AUTH_URL: "http://localhost:3000"
+      NEXT_PUBLIC_SITE_URL: "http://localhost:3000"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Veritabanı + demo verisi
+        run: npx prisma db push --skip-generate && npm run db:seed
+      - run: npm run lint
+      - name: Eşleştirme duman testi
+        run: npm run test:matching
+      # build, typecheck için gereken next-env.d.ts dosyasını da üretir
+      - run: npm run build
+      - run: npm run typecheck
